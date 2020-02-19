@@ -1,0 +1,137 @@
+---
+title: "Sentiment in R"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(tidytext)
+library(forcats)
+library(scales)
+library(readr)
+```
+
+```{r}
+v <- read_rds('data/vyvanse.rds')
+```
+
+```{r}
+s <- read_rds('data/Stratteraoral.rds')
+```
+
+```{r}
+a1 <- read_rds('data/Adderall-oral.rds')
+```
+
+```{r}
+a2 <- read_rds('data/Adderallxroral.rds')
+```
+
+```{r}
+a <- a1 %>%
+  bind_rows(a2)
+```
+
+```{r}
+tidy.v <- v %>%
+  unnest_tokens(word,comment)
+```
+
+```{r}
+tidy.s <- s %>%
+  unnest_tokens(word,comment)
+```
+
+```{r}
+tidy.a <- a %>%
+  unnest_tokens(word,comment)
+```
+
+
+```{r}
+install.packages("textdata")
+```
+
+```{r}
+library(textdata)
+```
+
+
+```{r}
+nrc <- get_sentiments("nrc")
+```
+
+```{r}
+v.sentiment <- tidy.v %>%
+  inner_join(nrc, by = c("word"))
+```
+
+```{r}
+s.sentiment <- tidy.a %>%
+  inner_join(nrc, by = c("word"))
+```
+
+```{r}
+a.sentiment <- tidy.s %>%
+  inner_join(nrc, by = c("word"))
+```
+
+```{r}
+v.sentiment <- v.sentiment %>%
+  mutate(Drug_Name = "VYVANSE")
+```
+
+```{r}
+s.sentiment <- s.sentiment %>%
+  mutate(Drug_Name = "STRATTERAORAL")
+```
+
+```{r}
+a.sentiment <- a.sentiment %>%
+  mutate(Drug_Name = "ADDERALL")
+```
+
+```{r}
+names(v.sentiment)
+```
+
+```{r}
+vl.sentiment <- v.sentiment %>%
+  group_by(sentiment, Drug_Name) %>%
+  summarise(count = n())
+```
+
+```{r}
+sl.sentiment <- s.sentiment %>%
+  group_by(sentiment, Drug_Name) %>%
+  summarise(count = n())
+```
+
+```{r}
+al.sentiment <- a.sentiment %>%
+  group_by(sentiment, Drug_Name) %>%
+  summarise(count = n())
+```
+
+```{r}
+gl <- vl.sentiment %>%
+  bind_rows(sl.sentiment) %>%
+  bind_rows(al.sentiment)
+```
+
+```{r}
+install.packages("xlsx")
+```
+
+```{r}
+library(xlsx)
+```
+
+```{r}
+gl
+```
